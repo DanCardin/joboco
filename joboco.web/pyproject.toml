@@ -1,0 +1,68 @@
+[tool.poetry]
+name = "joboco.web"
+version = "0.1.0"
+description = ""
+authors = []
+packages = [
+    { include = "joboco", from = "src" },
+]
+
+[tool.poetry.scripts]
+joboco-server = "joboco.cli:main"
+
+[tool.poetry.dependencies]
+python = "^3.6"
+
+"joboco.lib" = { path = "../joboco.lib" }
+
+configly = { version = "*", extras = ["yaml"] }
+pendulum = ">=2.0,!=2.1.1"
+psycopg2 = { version = "*", optional = true }
+psycopg2-binary = { version = "*", optional = true }
+requests = "*"
+sqlalchemy = ">=1.3"
+
+[tool.poetry.dev-dependencies]
+bandit = "^1.6.2"
+black = "^19.10b0"
+coverage = ">=5"
+flake8 = "^3.7.9"
+isort = ">=5.0"
+mypy = "^0.770"
+pydocstyle = "^4.0.1"
+pytest = "^5.2"
+pytest-mock-resources = ">=1.4.0"
+sqlalchemy-model-factory = ">=0.2.0"
+pytest-alembic = "*"
+sqlalchemy-stubs = "*"
+
+[tool.black]
+line_length = 100
+
+[tool.coverage.run]
+source = "src"
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+order_by_type = false
+known_first_party = "tests"
+float_to_top=true
+
+[tool.pytest.ini_options]
+doctest_optionflags = "NORMALIZE_WHITESPACE IGNORE_EXCEPTION_DETAIL ELLIPSIS"
+addopts = "--ff --doctest-modules"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
