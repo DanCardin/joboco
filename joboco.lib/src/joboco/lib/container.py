@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict
 
 import docker
@@ -19,6 +19,9 @@ class ContainerState:
             yield line
 
     def done(self):
+        self.container.reload()
+        for line in self.logs():
+            print(line)
         return self.container.status == "exited"
 
     def kill(self):
@@ -34,7 +37,7 @@ class ContainerState:
 @dataclass
 class ContainerManager:
     client: docker.client.DockerClient
-    containers: Dict[str, ContainerState]
+    containers: Dict[str, ContainerState] = field(default_factory=dict)
 
     @classmethod
     def from_env(cls):
@@ -42,25 +45,39 @@ class ContainerManager:
         return cls(client)
 
     def submit(self, job_id, job: ContainerJob, reason):
+        print("executing", job_id)
         container = self.client.containers.run(
             job.image,
             environment={
                 "JOBOCO_UPSTREAM_JOB": reason.job,
                 "JOBOCO_JOB_ID": job_id,
+                "JOBOCO_JOB_NAME": job.name,
                 "JOBOCO_JOB_IMAGE": job.image,
+                **job.environment,
             },
             detach=True,
         )
-        return ContainerState(job_id, job.name, container)
+        container_state = ContainerState(job_id, job.name, container)
+        self.containers[job_id] = container_state
+        return container_state
+
+    def collect_events(self):
+        finished_jobs = self.cleanup()
+        print("finished_jobs", finished_jobs)
+        return [Event(target=container.job_name, type="completed") for container in finished_jobs]
 
     def cleanup(self):
         finished_job_ids = []
+        print("containers", len(self.containers))
         for job_id, container in self.containers.items():
             if container.done():
                 finished_job_ids.append(job_id)
 
+        finished_jobs = []
         for job_id in finished_job_ids:
-            self.containers.pop(job_id)
+            finished_jobs.append(self.containers.pop(job_id))
+
+        return finished_jobs
 
     def shutdown(self):
         for container_state in self.containers.values():

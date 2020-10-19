@@ -11,8 +11,8 @@ from joboco.lib.trigger import Trigger
 
 @dataclass
 class Scheduler:
-    triggers: Iterable[Trigger]
-    last_loop_time: datetime
+    triggers: Iterable[Trigger] = field(default_factory=list)
+    last_loop_time: datetime = field(default_factory=datetime.now)
     executor: ContainerManager = field(default_factory=ContainerManager.from_env)
 
     @classmethod
@@ -25,7 +25,11 @@ class Scheduler:
             time.sleep(0.2)
 
     def evaluate(self, events):
+        events.extend(self.executor.collect_events())
+
+        print("events", events)
         context = self.collect_context(events)
+        print("context", context)
         self.last_loop_time = context.time
 
         jobs_to_trigger = []
@@ -35,6 +39,7 @@ class Scheduler:
                 reason, job = result
                 jobs_to_trigger.append((reason, job))
 
+        print("jobs", jobs_to_trigger)
         self.schedule_jobs(*jobs_to_trigger)
 
     def collect_context(self, events):

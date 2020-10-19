@@ -24,7 +24,9 @@ class TriggerReason:
 
 def dt_condition(dt):
     def decorator(context: Context):
-        return context.dt_during(dt)
+        if context.dt_during(dt):
+            return TriggerReason()
+        return False
 
     return decorator
 
@@ -42,12 +44,14 @@ def once():
     return decorator
 
 
-def completed(*jobs):
-    job_set = set(id(t) for t in jobs)
+def on_event(*jobs, kind):
+    job_set = set(job.name for job in jobs)
+    print(job_set, kind)
 
     def decorator(context: Context):
         for event in context.events:
-            if id(event.target) in job_set and event.type == "complete":
+            print(event.target, event.type)
+            if event.target in job_set and event.type == kind:
                 return TriggerReason(event.target)
         return False
 

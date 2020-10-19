@@ -21,7 +21,7 @@ class AbstractJob(Protocol):
 class ContainerJob:
     name: str
     image: str
-    environment: Dict[str, str]
+    environment: Dict[str, str] = field(default_factory=dict)
 
     def build(self):
         return self
@@ -75,22 +75,14 @@ class JobLocalState:
         return self.state.get(key)
 
 
-def gate():
-    # TODO: Need interface for task-local state, without that, this will just be an or-gate
-    if set(id(c) for c in completions) == set(id(c) for c in self.conditions):
-        return Event(target=self, type="complete", result={})
-    return None
-
-
-def gate(name, *_jobs):
-    def _gate():
-        import ast
-        import os
-        import sys
-
-        jobs = ast.literal_eval(f"{_jobs}")
-        if os.environ.get("JOBOCO_UPSTREAM_JOB") in jobs:
-            return
-        sys.exit(1)
-
-    return PythonJob(name, _gate)
+def Gate(name, target, tasks):
+    # This environment thing isn't the right mechanism
+    return Job(
+        name,
+        image="gate",
+        environment={
+            "JOBOCO_GATE_NAME1": tasks[0].name,
+            "JOBOCO_GATE_NAME2": tasks[1].name,
+            "JOBOCO_GATE_TRIGGER": target.name,
+        },
+    )

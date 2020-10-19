@@ -19,8 +19,11 @@ configly = { version = "*", extras = ["yaml"] }
 pendulum = ">=2.0,!=2.1.1"
 psycopg2 = { version = "*", optional = true }
 psycopg2-binary = { version = "*", optional = true }
+pydantic = ">=1"
+fastapi = "*"
 requests = "*"
 sqlalchemy = ">=1.3"
+uvicorn = "*"
 
 [tool.poetry.dev-dependencies]
 bandit = "^1.6.2"
