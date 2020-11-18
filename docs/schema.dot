@@ -1,0 +1,24 @@
+digraph jobs {
+    daily;
+    jobA;
+    jobB;
+    jobC;
+    jobD;
+
+    daily -> jobA;
+
+    jobA -> jobB;
+    jobA -> jobC;
+
+    jobB -> jobD;
+    jobc -> jobD;
+}
+
+digraph jobs {
+    time-interval [ label="daily" ];
+    ti-event [ label="time-interval-event(2020-01-01)" ]
+    parameter;
+
+    ti-event -> parameter [ style=dotted, label="2020-01-01" ];
+    parameter -> jobA [ style=dotted, label="2020-01-01" ];
+}
