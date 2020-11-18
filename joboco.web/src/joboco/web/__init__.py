@@ -5,15 +5,18 @@ from fastapi import FastAPI, Request
 from joboco.lib import Scheduler
 from joboco.lib.event import Event
 from joboco.lib.job import JobLocalState
+from joboco.lib.registry import JobRegistry
 from pydantic import BaseModel
 
-from joboco.web.task import triggers
+from joboco.web.task import jobs, triggers
 
 app = FastAPI()
 
 
 jls_collection: Dict = defaultdict(JobLocalState)
-scheduler = Scheduler(triggers)
+
+job_registry = JobRegistry.from_jobs(jobs, triggers)
+scheduler = Scheduler()
 events = []
 
 
@@ -45,5 +48,5 @@ def emit_event(emit: Emit):
 
 @app.get("/tick")
 def tick():
-    scheduler.evaluate(events)
+    scheduler.evaluate(job_registry, events)
     events.clear()

@@ -28,7 +28,6 @@ class ContainerState:
         self.container.kill()
 
     def new_events(self):
-        # TODO: Actually make this do something
         if self.done():
             yield [Event(type="complete", target=self.job_name)]
         yield []
@@ -45,7 +44,6 @@ class ContainerManager:
         return cls(client)
 
     def submit(self, job_id, job: ContainerJob, reason):
-        print("executing", job_id)
         container = self.client.containers.run(
             job.image,
             environment={
@@ -63,12 +61,10 @@ class ContainerManager:
 
     def collect_events(self):
         finished_jobs = self.cleanup()
-        print("finished_jobs", finished_jobs)
         return [Event(target=container.job_name, type="completed") for container in finished_jobs]
 
     def cleanup(self):
         finished_job_ids = []
-        print("containers", len(self.containers))
         for job_id, container in self.containers.items():
             if container.done():
                 finished_job_ids.append(job_id)

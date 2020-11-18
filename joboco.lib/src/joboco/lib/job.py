@@ -4,9 +4,7 @@ import functools
 import inspect
 import textwrap
 from dataclasses import dataclass, field
-from typing import Callable, Dict, List, Protocol, Tuple
-
-from joboco.lib.event import Event
+from typing import Callable, Dict, List, Protocol
 
 
 class AbstractJob(Protocol):
@@ -25,10 +23,6 @@ class ContainerJob:
 
     def build(self):
         return self
-
-    def __call__(self, _):
-        result = self.fn()
-        return Event(target=self, type="complete", result=result)
 
 
 @dataclass(frozen=True)
@@ -55,10 +49,6 @@ class PythonJob:
     def build(self):
         image = ...
         return ContainerJob(image)
-
-    def __call__(self, _):
-        result = self.fn()
-        return Event(target=self, type="complete", result=result)
 
 
 Job = ContainerJob
